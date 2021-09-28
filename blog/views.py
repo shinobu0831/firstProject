@@ -1,7 +1,10 @@
 from django.shortcuts import render
 #from django.views.generic.base import TemplateView
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, FormView
+from django.urls import reverse_lazy
 from .models import BlogPost
+from .forms import ContactForm
+from django.contrib import messages
 
 
 class IndexView(ListView):
@@ -44,3 +47,14 @@ class MusicView(ListView):
     queryset = BlogPost.objects.filter(
         category='music').order_by('-posted_at')
     paginate_by = 2
+
+
+class ContactView(FormView):
+    template_name = 'contact.html'
+    form_class = ContactForm
+    success_url = reverse_lazy('blog:contact')
+
+    def form_valid(self, form):
+        form.send_email()
+        messages.success(self.request, 'お問い合わせは正常に送信されました。')
+        return super().form_valid(form)
